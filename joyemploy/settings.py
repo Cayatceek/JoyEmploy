@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+import os
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,6 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'rest_framework',
+    'rest_framework_simplejwt',
+
+    'employees',
+    'frontend',
+    'manage_panel',
 ]
 
 MIDDLEWARE = [
@@ -75,8 +85,12 @@ WSGI_APPLICATION = 'joyemploy.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'joyemploy',  # Replace with your PostgreSQL DB name
+        'USER': 'postgres',      # Replace with your PostgreSQL username
+        'PASSWORD': 'f333f9de8e984d75bc2f8ffc6bda9314',  # Replace with your PostgreSQL password
+        'HOST': 'localhost',   # Change if using a remote server
+        'PORT': '5432',        # Default PostgreSQL port
     }
 }
 
@@ -121,3 +135,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend', 'static'),
+]
+
+LOGIN_REDIRECT_URL = "/dashboard/"  # Куда перенаправлять после входа
+LOGOUT_REDIRECT_URL = "/login/"  # Куда после выхода
