@@ -43,9 +43,7 @@ pip install django==5.1.6 django-widget-tweaks
 ### 4. Настройте окружение
 Создайте файл `.env` в корне проекта и добавьте настройки, например:
 ```
-SECRET_KEY=your-secret-key-here
-DEBUG=True
-DATABASE_URL=sqlite:///db.sqlite3
+OPENAI_API_KEY = ваш_ключ
 ```
 
 Генерация `SECRET_KEY`:
@@ -79,10 +77,12 @@ python manage.py runserver
 ## Структура проекта
 ```
 JoyEmploy/
+├── employee_detail/    # Приложение для управления подробными данными сотрудника
 ├── employees/         # Приложение для модели Employee и Role
 ├── manage_panel/     # Приложение для управления сотрудниками
 ├── joyemploy/        # Основные настройки проекта
 ├── templates/        # Шаблоны HTML
+├── simple_pages/     # Настройки отдельных страних по типу регистрации и тп.
 ├── .gitignore        # Исключения для Git
 ├── requirements.txt  # Зависимости проекта
 └── README.md         # Этот файл
@@ -93,4 +93,12 @@ JoyEmploy/
 - `django-widget-tweaks` — Удобная работа с виджетами форм
 
 ## Лицензия
-Этот проект распространяется под лицензией MIT.
+Этот проект распространяется под лицензией GNU Affero General Public License v3.0 (AGPL-3.0).
+
+JoyEmploy is free software: вы можете распространять и/или изменять его в соответствии с условиями GNU Affero General Public License, опубликованной Free Software Foundation, версии 3 или (по вашему выбору) любой более поздней версии.
+
+Этот проект распространяется в надежде, что он будет полезен, но БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ, включая подразумеваемые гарантии товарной пригодности или пригодности для определённой цели. Подробности см. в GNU Affero General Public License.
+
+Вы должны были получить копию GNU Affero General Public License вместе с этим проектом. Если нет, см. https://www.gnu.org/licenses/.
+
+Для получения дополнительной информации о применении AGPL к вашему проекту, посетите https://www.gnu.org/licenses/agpl-3.0.html.
