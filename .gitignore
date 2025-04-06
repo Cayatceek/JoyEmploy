@@ -1,7 +1,31 @@
+# Виртуальное окружение
+.venv/
+env/
 venv/
+
+# Python
 __pycache__/
-db.sqlite3
+*.py[cod]
 *.pyc
+*.pyo
+*.pyd
+
+# Django
 *.log
-.env
+*.pot
+*.pyc
 *.sqlite3
+migrations/
+
+# Секреты и конфиденциальные данные
+.env
+secrets.json
+
+# Временные файлы
+*.bak
+*.swp
+*.DS_Store
+
+# Статические и медиа файлы (если они не нужны в репозитории)
+staticfiles/
+media/

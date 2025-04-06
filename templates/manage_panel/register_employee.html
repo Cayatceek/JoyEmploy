@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .register-employee-container {
+        padding: 2rem 0;
+    }
+    .register-employee-container h2 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #343a40;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .register-employee-form {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .register-employee-form .welcome-message {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    .register-employee-form .form-label {
+        font-weight: _echo "Hello World"500;
+        color: #343a40;
+    }
+    .register-employee-form .form-control,
+    .register-employee-form .form-select {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 0.5rem;
+    }
+    .register-employee-form .form-control:focus,
+    .register-employee-form .form-select:focus {
+        border-color: #004085;
+        box-shadow: 0 0 5px rgba(0, 64, 133, 0.2);
+    }
+    .register-employee-form .btn {
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        transition: 0.3s;
+    }
+    .register-employee-form .btn-save {
+        background: linear-gradient(135deg, #28a745, #218838);
+        color: white;
+    }
+    .register-employee-form .btn-save:hover {
+        background: linear-gradient(135deg, #218838, #1e7e34);
+    }
+    .register-employee-form .btn-cancel {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        color: white;
+    }
+    .register-employee-form .btn-cancel:hover {
+        background: linear-gradient(135deg, #5a6268, #545b62);
+    }
+    .register-employee-form .errorlist {
+        color: #dc3545;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% load widget_tweaks %}
+
+<div class="container register-employee-container">
+    <h2>Регистрация нового сотрудника</h2>
+
+    <div class="register-employee-form">
+        <p class="welcome-message">Мы рады новому члену команды. Пожалуйста, заполните данные ниже.</p>
+
+        <form method="post" id="registrationForm">
+            {% csrf_token %}
+            
+            <!-- Выводим общие ошибки формы -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                {{ form.email|add_class:"form-control" }}
+                {% if form.email.errors %}
+                    <div class="errorlist">{{ form.email.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Пароль -->
+            <div class="mb-3">
+                <label for="{{ form.password.id_for_label }}" class="form-label">Пароль</label>
+                {{ form.password|add_class:"form-control" }}
+                {% if form.password.errors %}
+                    <div class="errorlist">{{ form.password.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Имя -->
+            <div class="mb-3">
+                <label for="{{ form.name.id_for_label }}" class="form-label">Имя</label>
+                {{ form.name|add_class:"form-control" }}
+                {% if form.name.errors %}
+                    <div class="errorlist">{{ form.name.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Роль -->
+            <div class="mb-3">
+                <label for="{{ form.role.id_for_label }}" class="form-label">Роль</label>
+                {{ form.role|add_class:"form-select" }}
+                {% if form.role.errors %}
+                    <div class="errorlist">{{ form.role.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Возраст -->
+            <div class="mb-3">
+                <label for="{{ form.age.id_for_label }}" class="form-label">Возраст</label>
+                {{ form.age|add_class:"form-control" }}
+                {% if form.age.errors %}
+                    <div class="errorlist">{{ form.age.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Зарплата -->
+            <div class="mb-3">
+                <label for="{{ form.salary.id_for_label }}" class="form-label">Зарплата</label>
+                {{ form.salary|add_class:"form-control" }}
+                {% if form.salary.errors %}
+                    <div class="errorlist">{{ form.salary.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Отдел -->
+            <div class="mb-3">
+                <label for="{{ form.department.id_for_label }}" class="form-label">Отдел</label>
+                {{ form.department|add_class:"form-control" }} <!-- Изменено с form-select на form-control -->
+                {% if form.department.errors %}
+                    <div class="errorlist">{{ form.department.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Дата найма -->
+            <div class="mb-3">
+                <label for="{{ form.hiring_date.id_for_label }}" class="form-label">Дата найма</label>
+                {{ form.hiring_date|add_class:"form-control" }}
+                {% if form.hiring_date.errors %}
+                    <div class="errorlist">{{ form.hiring_date.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Бонусы -->
+            <div class="mb-3">
+                <label for="{{ form.bonuses.id_for_label }}" class="form-label">Бонусы</label>
+                {{ form.bonuses|add_class:"form-control" }}
+                {% if form.bonuses.errors %}
+                    <div class="errorlist">{{ form.bonuses.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Опыт работы -->
+            <div class="mb-3">
+                <label for="{{ form.work_experience.id_for_label }}" class="form-label">Опыт работы (годы)</label>
+                {{ form.work_experience|add_class:"form-control" }}
+                {% if form.work_experience.errors %}
+                    <div class="errorlist">{{ form.work_experience.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Кнопки -->
+            <div class="d-flex gap-2 justify-content-end">
+                <button type="submit" class="btn btn-save">Зарегистрировать сотрудника</button>
+                <a href="{% url 'manage_panel' %}" class="btn btn-cancel">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

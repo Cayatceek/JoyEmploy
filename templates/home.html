@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - WorkSense{% endblock %}
+
+{% block content %}
+<style>
+    .hero {
+        background: linear-gradient(135deg, #004085, #2a0a6b);
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+        border-radius: 0 0 50px 50px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .hero h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+    .hero p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    .btn-custom {
+        background: white;
+        color: #004085;
+        padding: 12px 24px;
+        font-size: 1rem;
+        border-radius: 30px;
+        transition: 0.3s;
+    }
+    .btn-custom:hover {
+        background: #003366;
+        color: white;
+    }
+    .features {
+        margin-top: 50px;
+        text-align: center;
+    }
+    .feature-card {
+        transition: 0.3s;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .card-body {
+        padding: 30px;
+    }
+</style>
+
+<div class="hero">
+    <h1>Добро пожаловать в WorkSense</h1>
+    <p>Управление сотрудниками и задачами стало проще!</p>
+    <a href="{% url 'about' %}" class="btn btn-custom">Узнать больше</a>
+</div>
+
+<div class="container features" id="features">
+    <h2 class="mb-4">Основные функции</h2>
+    <div class="row">
+        <div class="col-md-4 feature-card">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Управление сотрудниками</h5>
+                    <p class="card-text">Добавляйте, обновляйте и просматривайте сотрудников.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 feature-card">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Отслеживание задач</h5>
+                    <p class="card-text">Назначайте задачи и отслеживайте их выполнение.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 feature-card">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Анализ продуктивности</h5>
+                    <p class="card-text">Используйте AI для анализа рабочих данных сотрудников.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .manage-panel-container {
+        padding: 2rem 0;
+    }
+    .manage-panel-container h2 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #343a40;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .btn-add-employee {
+        background: linear-gradient(135deg, #004085, #2a0a6b);
+        color: white;
+        padding: 12px 24px;
+        font-size: 1rem;
+        border-radius: 30px;
+        transition: 0.3s;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+    }
+    .btn-add-employee:hover {
+        background: linear-gradient(135deg, #003366, #1f0750);
+        color: white;
+        text-decoration: none;
+    }
+    .employee-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+    .employee-card {
+        background-color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        transition: 0.3s;
+        position: relative;
+        border-left: 5px solid transparent;
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .employee-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        border-left: 5px solid #004085;
+    }
+    .employee-card h5 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #343a40;
+        margin-bottom: 0.5rem;
+    }
+    .employee-card p {
+        margin-bottom: 0.5rem;
+        color: #6c757d;
+        word-wrap: break-word;
+    }
+    .employee-card .role {
+        font-weight: 500;
+        color: #004085;
+    }
+    .employee-card .actions {
+        margin-top: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .btn-action {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        transition: 0.3s;
+        flex: 1;
+        text-align: center;
+    }
+    .btn-details {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+        color: white;
+    }
+    .btn-details:hover {
+        background: linear-gradient(135deg, #138496, #0c6c7a);
+        color: white;
+    }
+    .btn-update {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: #212529;
+    }
+    .btn-update:hover {
+        background: linear-gradient(135deg, #e0a800, #c69500);
+        color: #212529;
+    }
+    .btn-delete {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+    }
+    .btn-delete:hover {
+        background: linear-gradient(135deg, #c82333, #b21f2d);
+        color: white;
+    }
+    .icon {
+        margin-right: 0.3rem;
+    }
+    /* Стили для кастомного модального окна */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .custom-modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .custom-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    .custom-modal-header h5 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #343a40;
+    }
+    .custom-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6c757d;
+    }
+    .custom-modal-body {
+        margin-bottom: 15px;
+        color: #6c757d;
+    }
+    .custom-modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    .custom-modal-footer button {
+        padding: 8px 16px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .custom-modal-footer .btn-cancel {
+        background: #6c757d;
+        color: white;
+    }
+    .custom-modal-footer .btn-cancel:hover {
+        background: #5a6268;
+    }
+    .custom-modal-footer .btn-confirm {
+        background: #dc3545;
+        color: white;
+    }
+    .custom-modal-footer .btn-confirm:hover {
+        background: #c82333;
+    }
+</style>
+
+<div class="container manage-panel-container">
+    <h2>Управление сотрудниками</h2>
+
+    <!-- Отображение сообщений -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <a href="{% url 'register_employee' %}" class="btn btn-add-employee">
+        <i class="fas fa-plus icon"></i> Добавить нового сотрудника
+    </a>
+
+    <!-- Сетка карточек сотрудников -->
+    <div class="employee-grid">
+        {% for employee in employees %}
+        <div class="employee-card">
+            <div>
+                <h5>{{ employee.name }}</h5>
+                <p><strong>Роль:</strong> <span class="role">{{ employee.role.name|default:"Не указана" }}</span></p>
+                <p><strong>Email:</strong> {{ employee.email|default:"Не указан" }}</p>
+                <p><strong>ID:</strong> {{ employee.id }}</p>
+            </div>
+            <div class="actions">
+                <a href="{% url 'employee_detail' employee.id %}" class="btn btn-details btn-action">
+                    <i class="fas fa-info-circle icon"></i> Подробности
+                </a>
+                <a href="{% url 'update_employee' employee.id %}" class="btn btn-update btn-action">
+                    <i class="fas fa-edit icon"></i> Обновить
+                </a>
+                <button class="btn btn-delete btn-action" data-employee-id="{{ employee.id }}" data-employee-name="{{ employee.name }}" data-delete-url="{% url 'delete_employee' employee.id %}">
+                    <i class="fas fa-trash-alt icon"></i> Удалить
+                </button>
+            </div>
+
+            <!-- Кастомное модальное окно -->
+            <div class="custom-modal" id="deleteModal-{{ employee.id }}">
+                <div class="custom-modal-content">
+                    <div class="custom-modal-header">
+                        <h5>Подтверждение удаления</h5>
+                        <button class="custom-modal-close" data-modal-id="deleteModal-{{ employee.id }}">×</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        Вы уверены, что хотите удалить сотрудника <strong>{{ employee.name }}</strong>?
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="btn-cancel" data-modal-id="deleteModal-{{ employee.id }}">Отмена</button>
+                        <button class="btn-confirm confirm-delete" data-delete-url="{% url 'delete_employee' employee.id %}" data-card-id="{{ employee.id }}">Удалить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-muted">Сотрудники не найдены.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Открытие модального окна
+    document.querySelectorAll('.btn-delete').forEach(button => {
+        button.addEventListener('click', function () {
+            const modalId = `deleteModal-${this.getAttribute('data-employee-id')}`;
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        });
+    });
+
+    // Закрытие модального окна (кнопка "Отмена" или крестик)
+    document.querySelectorAll('.custom-modal-close, .btn-cancel').forEach(element => {
+        element.addEventListener('click', function () {
+            const modalId = this.getAttribute('data-modal-id');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+
+    // Подтверждение удаления
+    document.querySelectorAll('.confirm-delete').forEach(button => {
+        button.addEventListener('click', function () {
+            const deleteUrl = this.getAttribute('data-delete-url');
+            const cardId = this.getAttribute('data-card-id');
+            const modal = this.closest('.custom-modal');
+            const card = document.querySelector(`.employee-card:has(button[data-employee-id="${cardId}"])`);
+
+            fetch(deleteUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Ошибка сервера: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    if (modal) modal.style.display = 'none'; // Закрываем модальное окно
+                    if (card) card.remove(); // Удаляем карточку из DOM
+                } else {
+                    alert(data.message || 'Ошибка при удалении');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert(`Произошла ошибка: ${error.message}`);
+            });
+        });
+    });
+});
+
+// Функция для получения CSRF-токена
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

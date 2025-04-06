@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Общие стили для страницы */
+    .employee-detail-container {
+        padding: 2rem 0;
+    }
+    .employee-detail-container h2 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #343a40;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .employee-card {
+        background-color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        transition: 0.3s;
+        border-left: 5px solid transparent;
+    }
+    .employee-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        border-left: 5px solid #004085;
+    }
+    .employee-card h4 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #343a40;
+        margin-bottom: 1rem;
+    }
+    .employee-card h4:not(:first-child) {
+        margin-top: 2rem;
+    }
+    .employee-card p {
+        margin-bottom: 0.75rem;
+        color: #6c757d;
+        font-size: 1rem;
+    }
+    .employee-card hr {
+        margin: 1.5rem 0;
+        border-top: 1px solid #dee2e6;
+    }
+    /* Стили для анализа CV */
+    .cv-analysis-section {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    .cv-analysis-section h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 0.3rem;
+    }
+    .cv-analysis-section ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin-bottom: 1rem;
+    }
+    .cv-analysis-section ul li {
+        margin-bottom: 0.3rem;
+        line-height: 1.5;
+        color: #495057;
+    }
+    .cv-analysis-section p {
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    .cv-analysis-section .text-muted {
+        color: #6c757d !important;
+    }
+    /* Стили для формы загрузки CV */
+    #cv-upload-form {
+        margin-top: 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    #cv-upload-form input[type="file"] {
+        padding: 0.5rem;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+    }
+    #cv-upload-form button {
+        background: linear-gradient(135deg, #004085, #2a0a6b);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        transition: 0.3s;
+        border: none;
+    }
+    #cv-upload-form button:hover {
+        background: linear-gradient(135deg, #003366, #1f0750);
+    }
+    #upload-status {
+        margin-top: 0.5rem;
+    }
+    /* Стили для кнопок действий */
+    .action-buttons {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .btn-action {
+        font-size: 1rem;
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        transition: 0.3s;
+        flex: 1;
+        text-align: center;
+        min-width: 150px;
+    }
+    .btn-update {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: #212529;
+    }
+    .btn-update:hover {
+        background: linear-gradient(135deg, #e0a800, #c69500);
+        color: #212529;
+    }
+    .btn-delete {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+    }
+    .btn-delete:hover {
+        background: linear-gradient(135deg, #c82333, #b21f2d);
+        color: white;
+    }
+    .btn-back {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+        color: white;
+    }
+    .btn-back:hover {
+        background: linear-gradient(135deg, #138496, #0c6c7a);
+        color: white;
+    }
+    .icon {
+        margin-right: 0.3rem;
+    }
+</style>
+
+<div class="container employee-detail-container">
+    <h2>Детали сотрудника</h2>
+    <div class="employee-card">
+        <h4>{{ employee.name }}</h4>
+        <p><strong>Email:</strong> {{ employee.email|default:"Не указан" }}</p>
+        <p><strong>Роль:</strong> {{ employee.role.name|default:"Не указана" }}</p>
+        <p><strong>Дата регистрации:</strong> {{ employee.hiring_date|date:"d M Y" }}</p>
+        <p><strong>Завершённых задач:</strong> {{ employee.tasks_completed }}</p>
+        <p><strong>Эффективность:</strong> {{ employee.efficiency_score }}</p>
+        <p><strong>Рабочие часы:</strong> {{ employee.work_hours }}</p>
+        <p><strong>Возраст:</strong> {{ employee.age }}</p>
+        <p><strong>Дата найма:</strong> {{ employee.hiring_date|date:"d M Y" }}</p>
+        <p><strong>Опыт работы:</strong> {{ employee.work_experience }} лет</p>
+        <p><strong>Зарплата:</strong> ${{ employee.salary }}</p>
+        <p><strong>Отдел:</strong> {{ employee.department }}</p>
+        <p><strong>Бонусы:</strong> ${{ employee.bonuses }}</p>
+
+        <hr>
+
+        <h4>Анализ CV</h4>
+        <div id="cv-section">
+            {% if employee.cv_file %}
+                <p><strong>Загруженное CV:</strong> <a id="cv-link" href="{{ employee.cv_file.url }}" target="_blank">Просмотреть CV</a></p>
+                <div id="cv-analysis" class="cv-analysis-section">
+                    {% if analysis_sections %}
+                        {% for section in analysis_sections %}
+                            <div>
+                                {% if section.title|slice:":2" == "1." %}
+                                    <h5>Персональные данные</h5>
+                                {% elif section.title|slice:":2" == "2." %}
+                                    <h5>Образование</h5>
+                                {% elif section.title|slice:":2" == "3." %}
+                                    <h5>Опыт работы</h5>
+                                {% elif section.title|slice:":2" == "4." %}
+                                    <h5>Навыки</h5>
+                                {% elif section.title|slice:":2" == "5." %}
+                                    <h5>Дополнительно</h5>
+                                {% elif section.title|slice:":2" == "6." %}
+                                    <h5>Краткая оценка</h5>
+                                {% endif %}
+
+                                {% if section.title|slice:":2" != "6." %}
+                                    <ul>
+                                        {% for line in section.content %}
+                                            <li>{{ line }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>{{ section.content|join:" " }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Анализ недоступен</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p>CV не загружено.</p>
+            {% endif %}
+        </div>
+
+        <h4>Загрузить и проанализировать CV</h4>
+        <form id="cv-upload-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" id="cv-file" name="cv_file" accept=".pdf,.docx" required>
+            <button type="submit" class="btn btn-primary" id="upload-btn">Загрузить и проанализировать CV</button>
+        </form>
+        <div id="upload-status" class="mt-2"></div>
+
+        <div class="action-buttons">
+            <a href="{% url 'update_employee' employee.id %}" class="btn btn-update btn-action">
+                <i class="fas fa-edit icon"></i> Редактировать
+            </a>
+            <a href="{% url 'delete_employee' employee.id %}" class="btn btn-delete btn-action">
+                <i class="fas fa-trash-alt icon"></i> Удалить
+            </a>
+            <a href="{% url 'manage_panel' %}" class="btn btn-back btn-action">
+                <i class="fas fa-arrow-left icon"></i> Назад к панели
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById("cv-upload-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+    let fileInput = document.getElementById("cv-file");
+    let uploadBtn = document.getElementById("upload-btn");
+    let statusDiv = document.getElementById("upload-status");
+
+    // Проверка, выбран ли файл
+    if (fileInput.files.length === 0) {
+        statusDiv.innerHTML = '<span class="text-danger">Пожалуйста, выберите файл перед загрузкой.</span>';
+        return;
+    }
+
+    // Обновляем UI для обработки
+    statusDiv.innerHTML = '<span class="text-info">Обработка... Пожалуйста, подождите.</span>';
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = 'Загрузка...';
+
+    fetch("{% url 'upload_cv' employee.id %}", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновляем ссылку на загруженный файл
+            let cvLink = document.getElementById("cv-link");
+            if (cvLink) {
+                cvLink.href = data.cv_url;
+                cvLink.innerText = "Просмотреть CV";
+            } else {
+                let cvSection = document.getElementById("cv-section");
+                cvSection.innerHTML = '<p><strong>Загруженное CV:</strong> <a id="cv-link" href="' + data.cv_url + '" target="_blank">Просмотреть CV</a></p>';
+                cvSection.innerHTML += '<div id="cv-analysis" class="cv-analysis-section"></div>';
+            }
+
+            // Обновляем анализ
+            let analysisDiv = document.getElementById("cv-analysis");
+            analysisDiv.innerHTML = ''; // Очищаем текущий контент
+
+            if (data.summary && data.summary !== "Анализ недоступен") {
+                // Разбиваем анализ на секции
+                let sections = data.summary.split('\n\n');
+                sections.forEach(section => {
+                    if (!section) return;
+
+                    if (section.startsWith('1.')) {
+                        let div = document.createElement('div');
+                        div.innerHTML = '<h5>Персональные данные</h5>';
+                        let ul = document.createElement('ul');
+                        section.split('\n').slice(1).forEach(line => {
+                            if (line.trim()) {
+                                let li = document.createElement('li');
+                                li.innerText = line.trim().replace(/^-\s*/, '');
+                                ul.appendChild(li);
+                            }
+                        });
+                        div.appendChild(ul);
+                        analysisDiv.appendChild(div);
+                    } else if (section.startsWith('2.')) {
+                        let div = document.createElement('div');
+                        div.innerHTML = '<h5>Образование</h5>';
+                        let ul = document.createElement('ul');
+                        section.split('\n').slice(1).forEach(line => {
+                            if (line.trim()) {
+                                let li = document.createElement('li');
+                                li.innerText = line.trim().replace(/^-\s*/, '');
+                                ul.appendChild(li);
+                            }
+                        });
+                        div.appendChild(ul);
+                        analysisDiv.appendChild(div);
+                    } else if (section.startsWith('3.')) {
+                        let div = document.createElement('div');
+                        div.innerHTML = '<h5>Опыт работы</h5>';
+                        let ul = document.createElement('ul');
+                        section.split('\n').slice(1).forEach(line => {
+                            if (line.trim()) {
+                                let li = document.createElement('li');
+                                li.innerText = line.trim().replace(/^-\s*/, '');
+                                ul.appendChild(li);
+                            }
+                        });
+                        div.appendChild(ul);
+                        analysisDiv.appendChild(div);
+                    } else if (section.startsWith('4.')) {
+                        let div = document.createElement('div');
+                        div.innerHTML = '<h5>Навыки</h5>';
+                        let ul = document.createElement('ul');
+                        section.split('\n').slice(1).forEach(line => {
+                            if (line.trim()) {
+                                let li = document.createElement('li');
+                                li.innerText = line.trim().replace(/^-\s*/, '');
+                                ul.appendChild(li);
+                            }
+                        });
+                        div.appendChild(ul);
+                        analysisDiv.appendChild(div);
+                    } else if (section.startsWith('5.')) {
+                        let div = document.createElement('div');
+                        div.innerHTML = '<h5>Дополнительно</h5>';
+                        let ul = document.createElement('ul');
+                        section.split('\n').slice(1).forEach(line => {
+                            if (line.trim()) {
+                                let li = document.createElement('li');
+                                li.innerText = line.trim().replace(/^-\s*/, '');
+                                ul.appendChild(li);
+                            }
+                        });
+                        div.appendChild(ul);
+                        analysisDiv.appendChild(div);
+                    } else if (section.startsWith('6.')) {
+                        let div = document.createElement('div');
+                        div.innerHTML = '<h5>Краткая оценка</h5>';
+                        let p = document.createElement('p');
+                        p.innerText = section.split('\n').slice(1).join(' ').trim().replace(/^-\s*/, '');
+                        div.appendChild(p);
+                        analysisDiv.appendChild(div);
+                    }
+                });
+            } else {
+                analysisDiv.innerHTML = '<p class="text-muted">Анализ недоступен</p>';
+            }
+
+            statusDiv.innerHTML = '<span class="text-success">CV успешно загружено и проанализировано!</span>';
+        } else {
+            statusDiv.innerHTML = '<span class="text-danger">Не удалось проанализировать CV: ' + (data.error || "Попробуйте снова.") + '</span>';
+        }
+    })
+    .catch(error => {
+        console.error("Ошибка:", error);
+        statusDiv.innerHTML = '<span class="text-danger">Произошла ошибка при обработке запроса: ' + error.message + '</span>';
+    })
+    .finally(() => {
+        // Сбрасываем состояние кнопки
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = 'Загрузить и проанализировать CV';
+    });
+});
+</script>
+{% endblock %}
