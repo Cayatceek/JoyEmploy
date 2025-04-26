@@ -85,21 +85,3 @@ class Employee(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.name} ({self.role.name if self.role else 'Без роли'})"
-
-class Task(models.Model):
-    title = models.CharField(max_length=200, verbose_name="Название задачи")
-    status = models.CharField(
-        max_length=50,
-        choices=[('pending', 'В ожидании'), ('completed', 'Завершена')],
-        default='pending',  # Добавлено значение по умолчанию
-        verbose_name="Статус"
-    )
-    assigned_employee = models.ForeignKey(
-        Employee,
-        on_delete=models.CASCADE,
-        related_name="tasks",
-        verbose_name="Назначенный сотрудник"
-    )
-
-    def __str__(self):
-        return self.title

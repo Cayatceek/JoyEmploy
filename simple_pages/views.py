@@ -1,17 +1,12 @@
 import logging
-import openai
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate, login
+from django.contrib import messages
 
-from employees.models import Employee, Task
+from employees.forms import EmployeeAuthenticationForm
 
 logger = logging.getLogger(__name__)
-
-# API-ключ OpenRouter для работы с GPT
-OPENROUTER_API_KEY = "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"
-openai.api_key = OPENROUTER_API_KEY
-
 
 def home(request):
     return render(request, "home.html")
@@ -21,23 +16,30 @@ def aboutus(request):
     return render(request, "about.html")
 
 
-@login_required
-def dashboard(request):
-    # Текущий пользователь — это уже объект Employee
-    employee = request.user
-    # Проверяем роль пользователя
-    if not employee.role or employee.role.name not in ["hr", "superadmin"]:
-        return render(request, "no_access.html")
-
-    employees = Employee.objects.all()
-    tasks = Task.objects.all()
-    return render(request, "dashboard/dashboard.html", {"employees": employees, "tasks": tasks})
-
-
 def custom_logout(request):
     logout(request)
     return render(request, "auth/logout.html")
 
+def custom_login_view(request):
+    # Если пользователь уже аутентифицирован, перенаправляем на панель управления
+    if request.user.is_authenticated:
+        return redirect('manage_panel')
 
-def news(request):
-    return render(request, "news.html")
+    if request.method == "POST":
+        form = EmployeeAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('username')  # Используем email как username
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=email, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, f"Добро пожаловать, {user.name}!")
+                return redirect('manage_panel')
+            else:
+                messages.error(request, "Неверный email или пароль.")
+        else:
+            messages.error(request, "Ошибка в данных формы. Проверьте email и пароль.")
+    else:
+        form = EmployeeAuthenticationForm()
+
+    return render(request, 'auth/login.html', {'form': form})

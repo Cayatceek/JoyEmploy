@@ -85,13 +85,15 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">Задачи</a>
-                    </li>
                     {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'taskboard_view' %}">Задачи</a>
+                        </li>
+                        {% if user.is_superuser or user.role.name == 'hr' %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'manage_panel' %}">Панель управления</a>
                         </li>
+                        {% endif %}
                     {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'news' %}">Новости</a>

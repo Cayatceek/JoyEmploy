@@ -1,0 +1,302 @@
+<!-- taskboard/taskboard.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .task-item {
+        transition: background-color 0.2s;
+    }
+    .task-item:hover {
+        background-color: #f8f9fa;
+    }
+    .task-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    .task-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .card-header {
+        background-color: #e9ecef;
+        font-weight: 500;
+    }
+    .form-container {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+    .status-pending {
+        border-left: 4px solid #ffc107;
+    }
+    .status-completed {
+        border-left: 4px solid #28a745;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        margin-left: 0.5rem;
+    }
+    .btn-complete {
+        background-color: #28a745;
+        color: white;
+    }
+    .btn-complete:hover {
+        background-color: #218838;
+        color: white;
+    }
+    /* Стили для модального окна */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .custom-modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .custom-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    .custom-modal-header h5 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #343a40;
+    }
+    .custom-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6c757d;
+    }
+    .custom-modal-body {
+        margin-bottom: 15px;
+        color: #6c757d;
+    }
+    .custom-modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    .custom-modal-footer button {
+        padding: 8px 16px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .custom-modal-footer .btn-cancel {
+        background: #6c757d;
+        color: white;
+    }
+    .custom-modal-footer .btn-cancel:hover {
+        background: #5a6268;
+    }
+    .custom-modal-footer .btn-confirm {
+        background: #dc3545;
+        color: white;
+    }
+    .custom-modal-footer .btn-confirm:hover {
+        background: #c82333;
+    }
+    .custom-modal-footer .btn-confirm-complete {
+        background: #28a745;
+        color: white;
+    }
+    .custom-modal-footer .btn-confirm-complete:hover {
+        background: #218838;
+    }
+</style>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Taskboard</h2>
+
+    {% if is_admin %}
+    <!-- Форма добавления задачи -->
+    <form method="post" class="mb-5 p-4 rounded form-container shadow-sm">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="title" class="form-label">Название задачи</label>
+                <input type="text" name="title" id="title" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="employee" class="form-label">Назначить сотрудника</label>
+                <select name="employee" id="employee" class="form-select" required>
+                    <option value="" disabled selected>Выберите сотрудника</option>
+                    {% for emp in employees %}
+                        <option value="{{ emp.id }}">{{ emp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Добавить</button>
+            </div>
+        </div>
+    </form>
+    {% endif %}
+
+    <!-- В ожидании -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header">
+            В ожидании ({{ pending_tasks.count }})
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for task in pending_tasks %}
+                <li class="list-group-item task-item status-pending">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="task-title">{{ task.title }}</h5>
+                            <small class="task-info">
+                                {% if is_admin %}
+                                Назначено: {{ task.assigned_employee.name }} (Завершено задач: {{ task.assigned_employee.tasks_completed }}) |
+                                {% endif %}
+                                Создано: {{ task.created_at|date:"Y-m-d H:i" }}
+                            </small>
+                        </div>
+                        <div>
+                            {% if task.assigned_employee == user %}
+                            <button class="btn btn-complete btn-sm btn-confirm-action" data-task-id="{{ task.id }}" data-action="complete">Завершить</button>
+                            <!-- Модальное окно для завершения -->
+                            <div class="custom-modal" id="completeModal-{{ task.id }}">
+                                <div class="custom-modal-content">
+                                    <div class="custom-modal-header">
+                                        <h5>Подтверждение завершения</h5>
+                                        <button class="custom-modal-close" data-modal-id="completeModal-{{ task.id }}">×</button>
+                                    </div>
+                                    <div class="custom-modal-body">
+                                        Вы уверены, что хотите завершить задачу <strong>{{ task.title }}</strong>?
+                                    </div>
+                                    <div class="custom-modal-footer">
+                                        <button class="btn-cancel" data-modal-id="completeModal-{{ task.id }}">Отмена</button>
+                                        <form method="post" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" name="complete" value="{{ task.id }}" class="btn-confirm-complete">Завершить</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if is_admin %}
+                            <button class="btn btn-danger btn-sm btn-confirm-action" data-task-id="{{ task.id }}" data-action="delete">Удалить</button>
+                            <!-- Модальное окно для удаления -->
+                            <div class="custom-modal" id="deleteModal-{{ task.id }}">
+                                <div class="custom-modal-content">
+                                    <div class="custom-modal-header">
+                                        <h5>Подтверждение удаления</h5>
+                                        <button class="custom-modal-close" data-modal-id="deleteModal-{{ task.id }}">×</button>
+                                    </div>
+                                    <div class="custom-modal-body">
+                                        Вы уверены, что хотите удалить задачу <strong>{{ task.title }}</strong>?
+                                    </div>
+                                    <div class="custom-modal-footer">
+                                        <button class="btn-cancel" data-modal-id="deleteModal-{{ task.id }}">Отмена</button>
+                                        <form method="post" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" name="delete" value="{{ task.id }}" class="btn-confirm">Удалить</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">Нет задач в ожидании.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Завершённые -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            Завершённые ({{ completed_tasks.count }})
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for task in completed_tasks %}
+                <li class="list-group-item task-item status-completed">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="task-title">{{ task.title }}</h5>
+                            <small class="task-info">
+                                {% if is_admin %}
+                                Назначено: {{ task.assigned_employee.name }} |
+                                {% endif %}
+                                Создано: {{ task.created_at|date:"Y-m-d H:i" }} |
+                                Завершено: {{ task.completed_at|date:"Y-m-d H:i" }}
+                            </small>
+                        </div>
+                        {% if is_admin %}
+                        <button class="btn btn-danger btn-sm btn-confirm-action" data-task-id="{{ task.id }}" data-action="delete">Удалить</button>
+                        <!-- Модальное окно для удаления завершённых задач -->
+                        <div class="custom-modal" id="deleteModal-{{ task.id }}">
+                            <div class="custom-modal-content">
+                                <div class="custom-modal-header">
+                                    <h5>Подтверждение удаления</h5>
+                                    <button class="custom-modal-close" data-modal-id="deleteModal-{{ task.id }}">×</button>
+                                </div>
+                                <div class="custom-modal-body">
+                                    Вы уверены, что хотите удалить задачу <strong>{{ task.title }}</strong>?
+                                </div>
+                                <div class="custom-modal-footer">
+                                    <button class="btn-cancel" data-modal-id="deleteModal-{{ task.id }}">Отмена</button>
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" name="delete" value="{{ task.id }}" class="btn-confirm">Удалить</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">Нет завершённых задач.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Открытие модального окна
+    document.querySelectorAll('.btn-confirm-action').forEach(button => {
+        button.addEventListener('click', function () {
+            const taskId = this.getAttribute('data-task-id');
+            const action = this.getAttribute('data-action');
+            const modalId = `${action}Modal-${taskId}`;
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        });
+    });
+
+    // Закрытие модального окна (кнопка "Отмена" или крестик)
+    document.querySelectorAll('.custom-modal-close, .btn-cancel').forEach(element => {
+        element.addEventListener('click', function () {
+            const modalId = this.getAttribute('data-modal-id');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

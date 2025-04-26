@@ -11,7 +11,11 @@ SECRET_KEY = 'django-insecure-p14=+g=w9$i=yg3ul0)-6u=vlw96v$s9%!@b2^(*n&9#of&^&#
 DEBUG = True
 
 # Разрешённые хосты (добавьте домены в продакшене, например, ['yourdomain.com'])
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '47ba-188-113-214-231.ngrok-free.app']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://47ba-188-113-214-231.ngrok-free.app',
+]
 
 # Установленные приложения
 INSTALLED_APPS = [
@@ -32,6 +36,8 @@ INSTALLED_APPS = [
     'simple_pages',
     'manage_panel',
     'employee_detail',
+    'news',
+    'taskboard',
 ]
 
 # Middleware

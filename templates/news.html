@@ -1,10 +1,145 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
+<style>
+    .news-container {
+        padding: 2rem 0;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .news-container h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #343a40;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .news-form, .news-list {
+        background-color: #fff;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    .news-form .form-label {
+        font-weight: 500;
+        color: #343a40;
+    }
+    .news-form .form-control {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 0.5rem;
+    }
+    .news-form .form-control:focus {
+        border-color: #004085;
+        box-shadow: 0 0 5px rgba(0, 64, 133, 0.2);
+    }
+    .news-form .btn {
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        transition: 0.3s;
+        width: 100%;
+        background: linear-gradient(135deg, #004085, #2a0a6b);
+        color: white;
+    }
+    .news-form .btn:hover {
+        background: linear-gradient(135deg, #003366, #1f0750);
+    }
+    .news-item {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .news-item:last-child {
+        border-bottom: none;
+    }
+    .news-item h3 {
+        font-size: 1.5rem;
+        color: #004085;
+        margin-bottom: 0.5rem;
+    }
+    .news-item p {
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    .news-item small {
+        color: #adb5bd;
+        font-size: 0.9rem;
+    }
+    .alert {
+        color: #dc3545;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+    .alert-success {
+        color: #28a745;
+    }
+    .delete-btn {
+        padding: 0.3rem 1rem;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #dc3545, #a71d2a);
+        color: white;
+        border: none;
+        transition: 0.3s;
+    }
+    .delete-btn:hover {
+        background: linear-gradient(135deg, #c82333, #8c1622);
+    }
+</style>
 
-<div class="container mt-5">
+<div class="container news-container">
     <h1>Новости</h1>
-    <p>Здесь будет список новостей.</p>
-</div>
 
+    <!-- Сообщения -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Форма для добавления новости (только для админов) -->
+    {% if user.is_authenticated and user.is_staff %}
+    <div class="news-form">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="title" class="form-label">Заголовок</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Содержание</label>
+                <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn">Добавить новость</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Список новостей -->
+    <div class="news-list">
+        {% if news %}
+            {% for item in news %}
+                <div class="news-item">
+                    <div>
+                        <h3>{{ item.title }}</h3>
+                        <p>{{ item.content }}</p>
+                        <small>Опубликовано: {{ item.created_at|date:"Y-m-d H:i" }}</small>
+                    </div>
+                    {% if user.is_authenticated and user.is_staff %}
+                    <form method="post" style="margin-left: 1rem;">
+                        {% csrf_token %}
+                        <button type="submit" name="delete" value="{{ item.id }}" class="delete-btn">Удалить</button>
+                    </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Новостей пока нет.</p>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

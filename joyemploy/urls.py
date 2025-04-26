@@ -13,6 +13,8 @@ urlpatterns = [
     path('', include('simple_pages.urls')), 
     path('employee/', include('employees.urls')),
     path('manage/',include('manage_panel.urls')),
-    path('employee_detail/', include('employee_detail.urls'))
+    path('employee_detail/', include('employee_detail.urls')),
+    path('news/', include('news.urls')), 
+    path('taskboard/', include('taskboard.urls'))
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
