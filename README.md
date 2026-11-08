@@ -3,7 +3,7 @@
 Система управления сотрудниками, разработанная на Django. Подходит для HR-отделов и администраторов.
 
 ## Требования
-- Python 3.8+
+- Python 3.10+ (для Django 5.1)
 - Django 5.1.6
 - Git
 
@@ -11,7 +11,7 @@
 
 ### 1. Клонируйте репозиторий
 ```bash
-git clone https://github.com/Sayatttttttt/JoyEmploy.git
+git clone https://github.com/Cayatceek/JoyEmploy.git
 cd JoyEmploy
 ```
 
@@ -35,12 +35,14 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Если файл `requirements.txt` отсутствует, установите вручную:
+В текущем `requirements.txt` отсутствует используемый приложением `django-widget-tweaks`. Дополнительно установите его:
 ```bash
-pip install django==5.1.6 django-widget-tweaks
+python -m pip install django-widget-tweaks
 ```
 
-### 4. Настройте окружение
+### 4. Настройте базу и окружение
+
+Проект использует PostgreSQL. Создайте базу `joyemploy` и укажите собственные параметры в `DATABASES` файла `joyemploy/settings.py`. Опубликованные настройки предназначены для разработки; не используйте их для доступного извне сервиса.
 Создайте файл `.env` в корне проекта и добавьте настройки, например:
 ```
 OPENAI_API_KEY = ваш_ключ
@@ -53,7 +55,6 @@ python -c "import secrets; print(secrets.token_urlsafe(50))"
 
 ### 5. Примените миграции
 ```bash
-python manage.py makemigrations
 python manage.py migrate
 ```
 
